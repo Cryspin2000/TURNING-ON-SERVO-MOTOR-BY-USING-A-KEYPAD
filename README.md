@@ -1,0 +1,2 @@
+# TURNING-ON-SERVO-MOTOR-BY-USING-A-KEYPAD
+Today’s life is being controlled by technology and Every individual needs to feel secure in their daily lives. In our security pattern, access control of servo motor by using keypad plays an essential role. control of servo motor using keypad systems allow authorized persons to access restricted areas. Also this project of controlling a servo motor using keypad it can especially use where we need more safe and secure like locking and unlocking.
