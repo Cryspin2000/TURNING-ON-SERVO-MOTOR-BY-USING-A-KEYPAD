@@ -1,6 +1,6 @@
 # TURNING-ON-SERVO-MOTOR-BY-USING-A-KEYPAD
 # 1.	ABSTRACT
-Today’s life is being controlled by technology and Every individual needs to feel secure in their daily lives. In our security pattern, access control of servo motor by using keypad plays an essential role. control of servo motor using keypad systems allow authorized persons to access restricted areas. Also this project of controlling a servo motor using keypad it can especially use where we need more safe and secure like locking and unlocking.Conventional locks are not as secure as they once were; anyone can break in if they break these locks. We need a framework that provides benefit. It is controlled by an Arduino. The password is entered using a keypad. The entered password is compared with the known password when setting a combination password and by using 1-6 digits. A correct password opens the door by rotating the servo motor. If the password is wrong the servo motor remains stop. And also a servo motor it will operate or rotate only if the password in keypad is correct and the green indicator bright to show you that the password is correct and doors opens servo motor rotate in forward direction at specified angle and even if the door is open to return back or to close it you can press * and the led indicator bright to show you that the door is closed and servo motor rotate in reverse direction at specified angle. And also this system it can be used in difference field where we need to provide more safe and secure.
+ Today’s life is being controlled by technology and Every individual needs to feel secure in their daily lives. In our security pattern, access control of servo motor by using keypad plays an essential role. control of servo motor using keypad systems allow authorized persons to access restricted areas. Also this project of controlling a servo motor using keypad it can especially use where we need more safe and secure like locking and unlocking.   Conventional locks are not as secure as they once were; anyone can break in if they break these locks. We need a framework that provides benefit. It is controlled by an Arduino. The password is entered using a keypad. The entered password is compared with the known password when setting a combination password and by using 1-6 digits. A correct password opens the door by rotating the servo motor. If the password is wrong the servo motor remains stop. And also a servo motor it will operate or rotate only if the password in keypad is correct and the green indicator bright to show you that the password is correct and doors opens servo motor rotate in forward direction at specified angle and even if the door is open and it return back automatically after a certain period set and the led indicator bright to show you that the door is closed and servo motor rotate in reverse direction at specified angle. And also this system it can be used in difference field where we need to provide more safe and secure.
 
 # 2.	 PROBLEM STATEMENT
 
@@ -29,66 +29,76 @@ This block diagram of turning on a servo motor using keypad it composed with thr
 
 # 7. SOURCE CODE OF TURNING ON SERVO MOTOR BY USING KEYPAD
 
-
-
-#include <Servo.h>
 #include <Keypad.h>
+#include <Servo.h>
+#define ROW_NUM    4  
+#define COLUMN_NUM 4 
+#define SERVO_PIN  A0
+Servo servo; 
 
-Servo ServoMotor;
-char* password = "809";  // change the password here, just pick any 3 numbers
-int position = 0;
-const byte ROWS = 4;
-const byte COLS = 3;
-char keys[ROWS][COLS] = {
-{'#','0','*'},
-{'9','8','7'},
-{'6','5','5'},
-{'3','2','1'},
+char keys[ROW_NUM][COLUMN_NUM] = {
+  {'1', '2', '3','A'},
+  {'4', '5', '6','B'},
+  {'7', '8', '9','C'},
+  {'*', '0', '#','D'}
 };
 
-byte rowPins[ROWS] = {5,6,7,8 };//Pin may change according to sutability
-byte colPins[COLS] = { 2,3,4};
-Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
-int RedpinLock = 12;
-int GreenpinUnlock = 13;
-void setup()
-{
-pinMode(RedpinLock, OUTPUT);
-pinMode(GreenpinUnlock, OUTPUT);
-ServoMotor.attach(11);
-setLocked(true);
+byte pin_rows[ROW_NUM] = {9,8, 7, 6}; 
+byte pin_column[COLUMN_NUM] = {5,4, 3, 2}; 
+Keypad keypad = Keypad( makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM );
+
+const String password = "809"; 
+String input_password;
+
+int angle = 0; 
+unsigned long lastTime;
+int redled = 12;
+int greenled = 13;
+void setup() {
+  Serial.begin(9600);
+  input_password.reserve(4); 
+  servo.attach(SERVO_PIN);
+  servo.write(0); 
+  lastTime = millis();
+  pinMode(redled, OUTPUT);
+  pinMode(greenled, OUTPUT);
 }
 
-void loop()
-{
-char key = keypad.getKey();
-if (key == '*' || key == '#')
-{
-position = 0;
-setLocked(true);
-}
-if (key == password[position])
-{
-position ++;
-}
-if (position == 3)
-{
-setLocked(false);
-}
-delay(100);
-}
-void setLocked(int locked)
-{
-if (locked)
-{
-digitalWrite(RedpinLock, HIGH);
-digitalWrite(GreenpinUnlock, LOW);
-ServoMotor.write(0);
-}
-else
-{
-digitalWrite(RedpinLock, LOW);
-digitalWrite(GreenpinUnlock, HIGH);
-ServoMotor.write(90);
-}
+void loop() {
+  char key = keypad.getKey();
+
+  if (key) {
+    Serial.println(key);
+
+    if (key == '*') {
+      input_password = "";
+    } else if (key == '#') {
+      if (input_password == password) {
+        Serial.println("The password is correct, rotating Servo Motor to 90°");
+        Serial.println("DOOR UNLOCKED");
+        digitalWrite(12,LOW);
+        digitalWrite(13,HIGH);
+        angle = 90;
+        servo.write(angle);
+        lastTime = millis();
+      } else {
+        Serial.println("The password is incorrect, try again");
+        Serial.println("DOOR LOCKED");
+        digitalWrite(12,HIGH);
+        digitalWrite(13,LOW);
+      }
+
+      input_password = ""; 
+    } else {
+      input_password += key; 
+    }
+  }
+  if (angle == 90 && (millis() - lastTime) > 5000) {
+    angle = 0;
+    servo.write(angle);
+    Serial.println("Rotating Servo Motor to 0°");
+    Serial.println("DOOR LOCKED");
+    digitalWrite(12,HIGH);
+    digitalWrite(13,LOW);
+  }
 }
